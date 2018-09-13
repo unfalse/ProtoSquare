@@ -1,67 +1,55 @@
 (function() {
-  var FIELD_WIDTH = 80;
-  var FIELD_HEIGHT = 80;
 
-  const GROUND = { ID: 1, COLOR: 'green' }; // ground
-  const WALL = { ID: 2, COLOR: 'gray' }; // wall
-  const WATER = { ID: 3, COLOR: 'aqua' }; // water
-  const ABYSS = { ID: 4, COLOR: 'black' }; // abyss
-  const TARGET = { ID: 5, COLOR: 'red' }; // target
-  const TANK = { ID:6, COLOR: 'purple' }; // tank
-  const BOAT = { ID: 7, COLOR: 'blue' }; // boat
-  const HELI = { ID: 8, COLOR: 'orange'}
+  const NOTHING = { ID: 0 }; // nothing
+  const GROUND = { ID: 1 }; // ground
+  const WALL = { ID: 2 }; // wall
+  const WATER = { ID: 3 }; // water
+  const ABYSS = { ID: 4 }; // abyss
+  const TARGET = { ID: 5 }; // target
+  const TANK = { ID:6 }; // tank
+  const BOAT = { ID: 7 }; // boat
+  const HELI = { ID: 8 }; // helicopter
 
-  var MapObject = function(id, color, x, y) {
-    var drawingSurface = document.getElementById('drawingSurface');
+  var MapObject = function(id, x, y) {
     this.id = id;
     this.x = x;
     this.y = y;
-    this.color = color;
     this.hide = false;
-    // TODO: it must be in Render maybe
-    this.drawContext = drawingSurface.getContext('2d');
   };
   MapObject.prototype.enabled = true;
-  MapObject.prototype.draw = function(x, y) {
-    // TODO: make it more beatiful
-    if (this.hide) return;
-    var drawX = typeof x === 'number' ? x : this.x;
-    var drawY = typeof y === 'number' ? y : this.y;
-    this.drawContext.fillStyle = this.color;
-    this.drawContext.fillRect(
-      drawX * FIELD_WIDTH,
-      drawY * FIELD_HEIGHT,
-      FIELD_WIDTH,
-      FIELD_HEIGHT
-    );
+
+  var NothingObject = function(x, y) {
+    MapObject.apply(this, [NOTHING.ID, x, y]);
   }
+  NothingObject.prototype = Object.create(MapObject.prototype);
+  NothingObject.prototype.constructor = NothingObject;
 
   var GroundObject = function(x, y) {
-    MapObject.apply(this, [GROUND.ID, GROUND.COLOR, x, y]);
+    MapObject.apply(this, [GROUND.ID, x, y]);
   }
   GroundObject.prototype = Object.create(MapObject.prototype);
   GroundObject.prototype.constructor = GroundObject;
 
   var WaterObject = function(x, y) {
-      MapObject.apply(this, [WATER.ID, WATER.COLOR, x, y]);
+      MapObject.apply(this, [WATER.ID, x, y]);
   }
   WaterObject.prototype = Object.create(MapObject.prototype);
   WaterObject.prototype.constructor = WaterObject;
 
   var AbyssObject = function(x, y) {
-      MapObject.apply(this, [ABYSS.ID, ABYSS.COLOR, x, y]);
+      MapObject.apply(this, [ABYSS.ID, x, y]);
   }
   AbyssObject.prototype = Object.create(MapObject.prototype);
   AbyssObject.prototype.constructor = AbyssObject;
 
   var WallObject = function(x, y) {
-      MapObject.apply(this, [WALL.ID, WALL.COLOR, x, y]);
+      MapObject.apply(this, [WALL.ID, x, y]);
   }
   WallObject.prototype = Object.create(MapObject.prototype);
   WallObject.prototype.constructor = WallObject;
 
   var TargetObject = function(x, y) {
-      MapObject.apply(this, [TARGET.ID, TARGET.COLOR, x, y]);
+      MapObject.apply(this, [TARGET.ID, x, y]);
   }
   TargetObject.prototype = Object.create(MapObject.prototype);
   TargetObject.prototype.constructor = TargetObject;
@@ -73,7 +61,7 @@
   // }
 
   var Heli = function(x, y) {
-    MapObject.apply(this, [HELI.ID, HELI.COLOR, x, y]);
+    MapObject.apply(this, [HELI.ID, x, y]);
     this.enabled = false;
   }
   Heli.prototype = Object.create(MapObject.prototype);
@@ -91,7 +79,7 @@
   }
 
   var Boat = function(x, y) {
-    MapObject.apply(this, [BOAT.ID, BOAT.COLOR, x, y]);
+    MapObject.apply(this, [BOAT.ID, x, y]);
     this.enabled = false;
   }
   Boat.prototype = new Heli(); // Object.create(Heli.prototype);
@@ -113,17 +101,7 @@
     this.dy = 0;
     this.move = false;
     this.moved = false;
-    MapObject.apply(this, [TANK.ID, TANK.COLOR, x, y]);
-    this.crocodile = document.getElementById("crocodile");
-    this.crocodile.style.top = 0;
-    this.crocodile.style.left = 0;
-    this.crocodile.style.display = '';
-    this.draw = function() {
-      //debugger;
-      this.crocodile.style.top = this.y * FIELD_HEIGHT;
-      this.crocodile.style.left = this.x * FIELD_WIDTH;
-      //debugger;
-    }
+    MapObject.apply(this, [TANK.ID, x, y]);
   }
   Tank.prototype = new Boat(); // Object.create(Boat.prototype);
   Tank.prototype.constructor = Tank;
@@ -208,28 +186,25 @@
     document.addEventListener(this.eventName, handler);
   }
 
-  var ProtoTank = function() {
+  var ProtoTank = function(renderDep) {
     // TODO: place all other classes inside this class
     console.log('Constructor launched!');
     this.land = [];
     this.objects = [];
-    // this.tank = new Tank(1, 1);
-    this.tank = new Tank(0, 0);
-    this.boatEnhancer = new Boat(0, 4);
+    // this.boatEnhancer = new Boat(0, 4);
     this.move = false;
     this.smoothControls = false;
-    this.mainCycleId = setInterval(this.Update.bind(this), 0);
+    this.mainCycleId = -1;
+    this._renderDep = renderDep;
   };
   ProtoTank.prototype.Launch = function() {
     this.Init();
-    this.Render();
-    //var ground = new GroundObject(0,0);
-    //ground.draw();
   }
   ProtoTank.prototype.Init = function() {
     console.log('Init!');
     // TODO: make constants
     this.objects = [
+      NothingObject
       ,new GroundObject() // ground
       ,new WallObject()   // wall
       ,new WaterObject()  // water
@@ -246,11 +221,20 @@
       [1, 2, 1, 1, 1, 1, 4, 4, 5],
     ];
     this.controls = new Controls();
+    this.tank = new Tank(0, 0);
+    this.RenderEngine = new this._renderDep({
+      land: this.land,
+      objects: this.objects,
+      tank: this.tank
+    });
     this.controls.subscribe(this.ControlsHandler.bind(this));
+    // this.mainCycleId = setInterval(this.Update.bind(this), 0);
+    this.Update();
   }
   ProtoTank.prototype.Update = function() {
     this.tank.Update(this);
-    this.Render();
+    this.RenderEngine.Render();
+    setTimeout(this.Update.bind(this), 0);
   }
   ProtoTank.prototype.GetObjectId = function(x, y) {
       return this.land[y] && this.land[y][x];
@@ -286,23 +270,63 @@
       this.tank.moved = false;
     }
   };
-  ProtoTank.prototype.Render = function() {
-    var x = 0;
-    var y = 0;
+
+  var Render = function(options) {
+    this.FIELD_WIDTH = 80;
+    this.FIELD_HEIGHT = 80;
+    this.COLORS = [
+      'white'
+      ,'green'
+      ,'gray'
+      ,'aqua'
+      ,'black'
+      ,'red'
+      ,'purple'
+      ,'blue'
+      ,'orange'
+    ];
+    this.land = options.land;
+    this.tank = {};
+    this.tank = options.tank;
+    this.objects = options.objects;
+    var drawingSurface = document.getElementById('drawingSurface');
+    this.drawContext = drawingSurface.getContext('2d');
+  }
+  
+  Render.prototype.Draw = function(obj, x, y) {
+    if (obj.hide) return;
+    var drawX = typeof x === 'number' ? x : obj.x;
+    var drawY = typeof y === 'number' ? y : obj.y;
+    this.drawContext.fillStyle = this.COLORS[obj.id];
+    this.drawContext.fillRect(
+      drawX * this.FIELD_WIDTH,
+      drawY * this.FIELD_HEIGHT,
+      this.FIELD_WIDTH,
+      this.FIELD_HEIGHT
+    );
+  }
+  Render.prototype.Render = function() {
+    let x = 0;
+    let y = 0;
     this.land.forEach(function(line, y) {
-      // debugger;
-      // if (x===9) x = 0, y++;
       this.land[y].forEach(function(num, x) {
-        this.objects[num].draw(x, y);
+        this.Draw(this.objects[num], x, y);
       }, this);
-      // x++;
     }, this);
-    this.tank.draw();
-    this.boatEnhancer.draw();
+    this.Draw(this.tank);
   }
 
-  var protoTank = new ProtoTank();
+  var protoTank = new ProtoTank(Render);
   protoTank.Launch();
+
+  var crocodile = document.getElementById("crocodile");
+  crocodile.style.top = 0;
+  crocodile.style.left = 0;
+  crocodile.style.display = '';
+  // this.draw = function() {
+  //   this.crocodile.style.top = this.y * FIELD_HEIGHT;
+  //   this.crocodile.style.left = this.x * FIELD_WIDTH;
+  // }
 
   // TODO:
   /*
