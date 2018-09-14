@@ -6,7 +6,7 @@
   const WATER = { ID: 3 }; // water
   const ABYSS = { ID: 4 }; // abyss
   const TARGET = { ID: 5 }; // target
-  const TANK = { ID:6 }; // tank
+  const SQUARE = { ID:6 }; // square
   const BOAT = { ID: 7 }; // boat
   const HELI = { ID: 8 }; // helicopter
 
@@ -73,7 +73,7 @@
       nextProto = nextProto.__proto__;
     }
   }
-  // If true then tank cannot move
+  // If true then square cannot move
   Heli.prototype.Collide = function(obj) {
     return this.enabled ? !(obj instanceof AbyssObject) : true;
   }
@@ -91,22 +91,22 @@
       nextProto = nextProto.__proto__;
     }
   }
-  // If true then tank cannot move
+  // If true then square cannot move
   Boat.prototype.Collide = function(obj) {
     return this.enabled ? !(obj instanceof WaterObject) : true;
   }
 
-  var Tank = function(x, y) {
+  var Square = function(x, y) {
     this.dx = 0;
     this.dy = 0;
     this.move = false;
     this.moved = false;
-    MapObject.apply(this, [TANK.ID, x, y]);
+    MapObject.apply(this, [SQUARE.ID, x, y]);
   }
-  Tank.prototype = new Boat(); // Object.create(Boat.prototype);
-  Tank.prototype.constructor = Tank;
-  // TODO: is it ok if Tank will know about ProtoTank ?
-  Tank.prototype.Update = function(protoTank) {
+  Square.prototype = new Boat(); // Object.create(Boat.prototype);
+  Square.prototype.constructor = Square;
+  // TODO: is it ok if Square will know about ProtoSquare ?
+  Square.prototype.Update = function(protoTank) {
     const nx = this.x + this.dx,
           ny = this.y + this.dy;
     const smoothMoves = protoTank.smoothControls || !this.moved;
@@ -117,7 +117,7 @@
       this.moved = true;
     }
   }
-  Tank.prototype.Collide = function(obj) {
+  Square.prototype.Collide = function(obj) {
     let collisionResult = !(obj instanceof GroundObject);
     let nextProto = this.__proto__;
     // debugger;
@@ -186,7 +186,7 @@
     document.addEventListener(this.eventName, handler);
   }
 
-  var ProtoTank = function(renderDep) {
+  var ProtoSquare = function(renderDep) {
     // TODO: place all other classes inside this class
     console.log('Constructor launched!');
     this.land = [];
@@ -197,10 +197,10 @@
     this.mainCycleId = -1;
     this._renderDep = renderDep;
   };
-  ProtoTank.prototype.Launch = function() {
+  ProtoSquare.prototype.Launch = function() {
     this.Init();
   }
-  ProtoTank.prototype.Init = function() {
+  ProtoSquare.prototype.Init = function() {
     console.log('Init!');
     // TODO: make constants
     this.objects = [
@@ -221,29 +221,30 @@
       [1, 2, 1, 1, 1, 1, 4, 4, 5],
     ];
     this.controls = new Controls();
-    this.tank = new Tank(0, 0);
+    this.square = new Square(0, 0);
     this.RenderEngine = new this._renderDep({
       land: this.land,
       objects: this.objects,
-      tank: this.tank
+      square: this.square
     });
+    this.RenderEngine.Init();
     this.controls.subscribe(this.ControlsHandler.bind(this));
     // this.mainCycleId = setInterval(this.Update.bind(this), 0);
     this.Update();
   }
-  ProtoTank.prototype.Update = function() {
-    this.tank.Update(this);
+  ProtoSquare.prototype.Update = function() {
+    this.square.Update(this);
     this.RenderEngine.Render();
     setTimeout(this.Update.bind(this), 0);
   }
-  ProtoTank.prototype.GetObjectId = function(x, y) {
+  ProtoSquare.prototype.GetObjectId = function(x, y) {
       return this.land[y] && this.land[y][x];
   }
-  ProtoTank.prototype.GetObject = function(x, y) {
+  ProtoSquare.prototype.GetObject = function(x, y) {
       const objectId = this.GetObjectId(x, y);
       return objectId && this.objects[objectId];
   }
-  ProtoTank.prototype.ControlsHandler = function(eventObj) {
+  ProtoSquare.prototype.ControlsHandler = function(eventObj) {
     const keyMap = {
       'up':     function() { this.dy = -1; this.dx = 0; },
       'right':  function() { this.dy = 0; this.dx = 1; },
@@ -251,23 +252,23 @@
       'left':   function() { this.dy = 0; this.dx = -1; },
     };
     if (eventObj.detail.move) {
-      keyMap[eventObj.detail.keyNum].apply(this.tank);
-      this.tank.move = true;
+      keyMap[eventObj.detail.keyNum].apply(this.square);
+      this.square.move = true;
     } else if (eventObj.detail.water) {
       // TODO: Adding prototype to get an ability to pass the water
       //       Maybe it's not possible?
       // debugger;
-      // this.tank.__proto__ = new Boat();
+      // this.square.__proto__ = new Boat();
       // /*  OR  */
-      // this.tank.__proto__ = Object.create(WaterObject.prototype);
+      // this.square.__proto__ = Object.create(WaterObject.prototype);
       // debugger;
       // debugger;
-      Boat.prototype.Enhance(this.tank);
+      Boat.prototype.Enhance(this.square);
     } else if (eventObj.detail.air) {
-      Heli.prototype.Enhance(this.tank);
+      Heli.prototype.Enhance(this.square);
     } else {
-      this.tank.move = false;
-      this.tank.moved = false;
+      this.square.move = false;
+      this.square.moved = false;
     }
   };
 
@@ -286,13 +287,13 @@
       ,'orange'
     ];
     this.land = options.land;
-    this.tank = {};
-    this.tank = options.tank;
+    this.square = {};
+    this.square = options.square;
     this.objects = options.objects;
-    var drawingSurface = document.getElementById('drawingSurface');
+    var drawingSurface = document.getElementById('drawing_surface');
     this.drawContext = drawingSurface.getContext('2d');
   }
-  
+  Render.prototype.Init = function() {}
   Render.prototype.Draw = function(obj, x, y) {
     if (obj.hide) return;
     var drawX = typeof x === 'number' ? x : obj.x;
@@ -313,16 +314,58 @@
         this.Draw(this.objects[num], x, y);
       }, this);
     }, this);
-    this.Draw(this.tank);
+    this.Draw(this.square);
   }
 
-  var protoTank = new ProtoTank(Render);
+  var RenderImgs = function(options) {
+    this.FIELD_WIDTH = 64;
+    this.FIELD_HEIGHT = 64;
+    this.COLORS = [
+      'white'
+      ,'mapTile_022.png' // ground
+      ,'gray' // wall
+      ,'aqua' // water
+      ,'black' // abyss
+      ,'red' // target
+      ,'purple' // square
+      ,'blue' // boat
+      ,'orange' // helicopter
+    ];
+    this.land = options.land;
+    this.square = {};
+    this.square = options.square;
+    this.objects = options.objects;
+    var drawingSurface = document.getElementById('drawing_surface');
+    this.drawContext = drawingSurface.getContext('2d');
+  }
+
+  var protoTank = new ProtoSquare(Render);
   protoTank.Launch();
 
-  var crocodile = document.getElementById("crocodile");
-  crocodile.style.top = 0;
-  crocodile.style.left = 0;
-  crocodile.style.display = '';
+  const setRadioGroupHandlers = function() {
+    const radios = document.getElementsByName('render');
+    const canvas_container = document.getElementsByClassName('canvas_container')[0];
+    const imgs_container = document.getElementsByClassName('imgs_container')[0];
+    const radioHandler = function() {
+      if (this.value === 'canvas') {
+        canvas_container.style.display = 'inline-block';
+        imgs_container.style.display = 'none';
+      } else {
+        canvas_container.style.display = 'none';
+        imgs_container.style.display = 'inline-block';
+      }
+    };
+    for(let i = 0; i < radios.length; i++) {
+      radios[i].addEventListener('click', radioHandler);
+    }
+  };
+
+  setRadioGroupHandlers();
+
+  // var crocodile = document.getElementById("crocodile");
+  // crocodile.style.top = 0;
+  // crocodile.style.left = 0;
+  // crocodile.style.display = '';
   // this.draw = function() {
   //   this.crocodile.style.top = this.y * FIELD_HEIGHT;
   //   this.crocodile.style.left = this.x * FIELD_WIDTH;
