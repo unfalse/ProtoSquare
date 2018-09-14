@@ -1,16 +1,59 @@
 <html>
-    <head></head>
+    <head>
+        <style>
+            .canvas_container {
+                padding: 20px;
+                position: relative;
+                display: inline-block;
+            }
+            .imgs_container {
+                padding: 20px;
+                position: relative;
+                display: none;
+            }
+            .render_switch {
+                display: inline-block;
+            }
+            #crocodile {
+                padding: 20px;
+                display: none;
+                position: absolute;
+                transition: top 1s, left 1s;
+                width: 59px;
+                height: 80px;
+            }
+            #drawing_surface {
+                border: 1px solid black;
+            }
+        </style>
+    </head>
+
     <body>
-        <div style="padding: 20px; position: relative;">
-            <img src="frame-1.png" width="59" height="80"
-             style="padding: 20px; display: none; position: absolute; transition: top 1s, left 1s;"
-             id="crocodile">
-            <canvas id="drawingSurface" height="560" width="720" style="border: 1px solid black;">Please, upgrade your browser.</canvas>
+        <div class="canvas_container">
+            <img src="frame-1.png" id="crocodile">
+            <canvas id="drawing_surface" height="560" width="720">Please, upgrade your browser.</canvas>
         </div>
+
+        <div class="render_switch">
+            <div>
+                <input type="radio" id="render1" name="render" value="canvas">
+                <label for="render1">Use canvas</label>
+            </div>
+            <div>
+                <input type="radio" id="render2" name="render" value="images">
+                <label for="render2">Use imgs</label>
+            </div>
+        </div>
+
+        <div class="imgs_container">
+            HELLO
+        </div>
+
         <div>
             Aqua ability is <span id="aqua">disabled</span><br>
             Air ability is <span id="air">disabled</span><br>
         </div>
+
         <script type="text/javascript" src="main.js"></script>
     </body>
 </html>
