@@ -212,13 +212,13 @@
       ,new TargetObject() // target
     ];
     this.land = [
-      [1, 1, 3, 3, 3, 1, 1, 4, 4],
-      [1, 1, 3, 3, 3, 1, 1, 4, 1],
-      [1, 3, 3, 3, 3, 1, 1, 4, 1],
-      [1, 3, 3, 3, 3, 1, 1, 4, 1],
-      [1, 3, 3, 1, 1, 1, 1, 4, 1],
-      [1, 3, 3, 1, 1, 1, 4, 4, 1],
-      [1, 2, 1, 1, 1, 1, 4, 4, 5],
+      [1, 1, 3, 3, 1, 1, 4, 4, 4],
+      [1, 1, 3, 3, 1, 1, 4, 1, 1],
+      [1, 1, 3, 3, 1, 1, 4, 1, 1],
+      [1, 1, 3, 3, 1, 1, 4, 1, 1],
+      [1, 1, 3, 1, 1, 1, 4, 1, 1],
+      [1, 1, 2, 1, 1, 1, 4, 1, 1],
+      [1, 1, 2, 1, 1, 4, 4, 1, 5],
     ];
     this.controls = new Controls();
     this.square = new Square(0, 0);
@@ -228,6 +228,14 @@
       square: this.square
     });
     this.RenderEngine.Init();
+    // Temporary for filling with tiles
+    // const RenderImgs = new this._renderDep2({
+    //   land: this.land,
+    //   objects: this.objects,
+    //   square: this.square
+    // });
+    // RenderImgs.Init();
+    // ---
     this.controls.subscribe(this.ControlsHandler.bind(this));
     // this.mainCycleId = setInterval(this.Update.bind(this), 0);
     this.Update();
@@ -272,9 +280,15 @@
     }
   };
 
+  var RenderBase = function(){};
+  RenderBase.prototype.FIELD_WIDTH = 64;
+  RenderBase.prototype.FIELD_HEIGHT = 64;
+  RenderBase.prototype.MAP_WIDTH = 9;
+  RenderBase.prototype.MAP_HEIGHT = 7;
+
   var Render = function(options) {
-    this.FIELD_WIDTH = 80;
-    this.FIELD_HEIGHT = 80;
+    // this.FIELD_WIDTH = 64;
+    // this.FIELD_HEIGHT = 64;
     this.COLORS = [
       'white'
       ,'green'
@@ -290,9 +304,11 @@
     this.square = {};
     this.square = options.square;
     this.objects = options.objects;
-    var drawingSurface = document.getElementById('drawing_surface');
+    var drawingSurface = document.getElementById('drawing-surface');
     this.drawContext = drawingSurface.getContext('2d');
   }
+  Render.prototype = Object.create(RenderBase.prototype);
+  Render.prototype.constructor = Render;
   Render.prototype.Init = function() {}
   Render.prototype.Draw = function(obj, x, y) {
     if (obj.hide) return;
@@ -307,8 +323,6 @@
     );
   }
   Render.prototype.Render = function() {
-    let x = 0;
-    let y = 0;
     this.land.forEach(function(line, y) {
       this.land[y].forEach(function(num, x) {
         this.Draw(this.objects[num], x, y);
@@ -318,45 +332,116 @@
   }
 
   var RenderImgs = function(options) {
-    this.FIELD_WIDTH = 64;
-    this.FIELD_HEIGHT = 64;
-    this.COLORS = [
-      'white'
-      ,'mapTile_022.png' // ground
-      ,'gray' // wall
-      ,'aqua' // water
-      ,'black' // abyss
-      ,'red' // target
-      ,'purple' // square
-      ,'blue' // boat
-      ,'orange' // helicopter
+    this.TILES = [
+      ''
+      ,'006' // 1
+      ,'008'
+      ,'021' // 3
+      ,'023'
+      ,'036' // 5
+      ,'037'
+      ,'024' // 7
+      ,'007'
+      ,'025' // 9
+      ,'038'
+      ,'009' //11
+      ,'188' // 12 <-- water
+      ,'black' // 13
+    ];
+    this.ground_land = [
+      [1, 2, 13, 13,  1,  2, 13, 13, 13],
+      [3, 4, 13, 13,  3,  4, 13,  1,  2],
+      [3, 4, 13, 13,  3,  4, 13,  3,  4],
+      [3, 4, 13, 13,  3,  4, 13,  3,  4],
+      [3, 4, 13,  1,  9,  4, 13,  3,  4],
+      [3, 7,  8,  9, 11, 10, 13,  3,  4],
+      [5, 6,  6,  6, 10, 13, 13,  5, 10],
     ];
     this.land = options.land;
     this.square = {};
     this.square = options.square;
     this.objects = options.objects;
-    var drawingSurface = document.getElementById('drawing_surface');
-    this.drawContext = drawingSurface.getContext('2d');
+    this.imagesSurface = document.getElementsByClassName('imgs-container')[0];
+  }
+  RenderImgs.prototype = Object.create(RenderBase.prototype);
+  RenderImgs.prototype.constructor = RenderImgs;
+  RenderImgs.prototype.Init = function() {
+    this.ground_land.forEach(function(line, y) {
+      this.ground_land[y].forEach(function(num, x) {
+        this.Draw(num, x, y);
+      }, this);
+    }, this);
+  }
+  RenderImgs.prototype.Draw = function(num, x, y) {
+    // debugger;
+    // if (obj.hide) return;
+    // var drawX = typeof x === 'number' ? x : obj.x;
+    // var drawY = typeof y === 'number' ? y : obj.y;
+    const img = document.createElement('img');
+    img.src = 'mappack_PNG/mapTile_' + 
+      this.TILES[num] + '.png';
+    this.imagesSurface.appendChild(img);
+    // this.imagesSurface.
+    // this.drawContext.fillStyle = this.COLORS[obj.id];
+    // this.drawContext.fillRect(
+    //   drawX * this.FIELD_WIDTH,
+    //   drawY * this.FIELD_HEIGHT,
+    //   this.FIELD_WIDTH,
+    //   this.FIELD_HEIGHT
+    // );
+  }
+  RenderImgs.prototype.Render = function() {
+    // this.Draw(this.square);
   }
 
-  var protoTank = new ProtoSquare(Render);
+  var protoTank = new ProtoSquare(Render, RenderImgs);
   protoTank.Launch();
 
   const setRadioGroupHandlers = function() {
-    const radios = document.getElementsByName('render');
-    const canvas_container = document.getElementsByClassName('canvas_container')[0];
-    const imgs_container = document.getElementsByClassName('imgs_container')[0];
-    const radioHandler = function() {
-      if (this.value === 'canvas') {
-        canvas_container.style.display = 'inline-block';
-        imgs_container.style.display = 'none';
-      } else {
-        canvas_container.style.display = 'none';
-        imgs_container.style.display = 'inline-block';
+    render_switch();
+    layout_switch();
+
+    function render_switch() {
+      const radios = document.getElementsByName('render');
+      const canvas_container = document.getElementsByClassName('canvas-container')[0];
+      const imgs_container = document.getElementsByClassName('imgs-container')[0];
+      const radioHandler = function() {
+        if (this.value === 'canvas') {
+          canvas_container.style.display = 'inline-block';
+          imgs_container.style.display = 'none';
+          protoTank = new ProtoSquare(Render);
+          protoTank.Launch();
+        } else {
+          canvas_container.style.display = 'none';
+          imgs_container.style.display = 'inline-block';
+          protoTank = new ProtoSquare(RenderImgs);
+          protoTank.Launch();
+        }
+      };
+      for(let i = 0; i < radios.length; i++) {
+        radios[i].addEventListener('click', radioHandler);
       }
-    };
-    for(let i = 0; i < radios.length; i++) {
-      radios[i].addEventListener('click', radioHandler);
+    }
+
+    function layout_switch() {
+      const radios = document.getElementsByName('layout_switcher');
+      const render_switch_inside = document.getElementsByClassName('render-switch-inside')[0];
+      const render_switch = document.getElementsByClassName('render-switch')[0];
+      const radioHandler = function() {
+        if (this.value === 'va-top') {
+          render_switch_inside.className =
+            'render-switch-inside';
+        } else if (this.value === 'flex') {
+          render_switch_inside.className =
+            'render-switch-inside render-switch-inside_flex';
+        } else if (this.value === 'flex') {
+          render_switch_inside.className =
+            'render-switch-inside render-switch-inside_grid';
+        }
+      };
+      for(let i=0; i < radios.length; i++) {
+        radios[i].addEventListener('click', radioHandler);
+      }
     }
   };
 
