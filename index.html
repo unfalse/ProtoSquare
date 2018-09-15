@@ -1,19 +1,52 @@
 <html>
     <head>
         <style>
-            .canvas_container {
-                padding: 20px;
-                position: relative;
+            .layout-radio {
                 display: inline-block;
             }
-            .imgs_container {
-                padding: 20px;
+
+            .render-and-switch {
+                display: block;
                 position: relative;
-                display: none;
             }
-            .render_switch {
-                display: inline-block;
-            }
+                .render-container {
+                    height: 448px;
+                    width: 576px;
+                }
+                .canvas-container {
+                    padding: 20px;
+                    position: relative;
+                    display: inline-block;
+                }
+                .imgs-container {
+                    padding: 20px;
+                    display: none;
+                }
+                .imgs-container_overlay {
+                    position: absolute;
+                    display: block;
+                    top: 0px;
+                }
+            
+                .render-switch {
+                    display: inline-block;
+                    padding-top: 20px;
+                }
+                .render-switch_va-top {
+                    vertical-align: top;
+                }
+                    .render-switch-inside {
+                        display: inline-block;
+                    }
+                    .render-switch-inside_flex {
+                        display: flex;
+                        flex-direction: column;
+                    }
+                    .render-switch-inside_grid {
+                        display: grid;
+                        flex-direction: column;
+                    }
+
             #crocodile {
                 padding: 20px;
                 display: none;
@@ -22,31 +55,69 @@
                 width: 59px;
                 height: 80px;
             }
-            #drawing_surface {
+            #drawing-surface {
                 border: 1px solid black;
             }
         </style>
     </head>
 
     <body>
-        <div class="canvas_container">
-            <img src="frame-1.png" id="crocodile">
-            <canvas id="drawing_surface" height="560" width="720">Please, upgrade your browser.</canvas>
+        <div id="layout-switch">
+            <div>Layout</div>
+            <div class="layout-radio">
+                <input 
+                    type="radio"
+                    id="layout-va-top"
+                    name="layout_switcher"
+                    value="va-top"
+                    checked>
+                <label for="layout-va-top">vertical-top</label>
+            </div>
+
+            <div class="layout-radio">
+                <input 
+                    type="radio"
+                    id="layout-flex"
+                    name="layout_switcher"
+                    value="flex">
+                <label for="layout-flex">flex</label>
+            </div>
+
+            <div class="layout-radio">
+                <input 
+                    type="radio"
+                    id="layout-grid"
+                    name="layout_switcher"
+                    value="grid">
+                <label for="layout-grid">grid</label>
+            </div>
         </div>
 
-        <div class="render_switch">
-            <div>
-                <input type="radio" id="render1" name="render" value="canvas">
-                <label for="render1">Use canvas</label>
+        <div class="render-and-switch">
+            <div class="render-container canvas-container">
+                <img src="frame-1.png" id="crocodile">
+                <canvas id="drawing-surface" height="448" width="576">Please, upgrade your browser.</canvas>
             </div>
-            <div>
-                <input type="radio" id="render2" name="render" value="images">
-                <label for="render2">Use imgs</label>
-            </div>
-        </div>
 
-        <div class="imgs_container">
-            HELLO
+            <div class="render-container imgs-container imgs-container_overlay"></div>
+
+            <div class="render-switch render-switch_va-top">
+                <div class="render-switch-inside render-switch-inside_va-top">
+                    <div>
+                        <input
+                            type="radio"
+                            id="render1" 
+                            name="render"
+                            value="canvas"
+                            checked>
+                        <label for="render1">Use canvas</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="render2" name="render" value="images">
+                        <label for="render2">Use imgs</label>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div>
