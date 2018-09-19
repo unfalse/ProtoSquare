@@ -333,7 +333,7 @@
 
   var RenderImgs = function(options) {
     this.TILES = [
-      ''
+      'white'
       ,'006' // 1
       ,'008'
       ,'021' // 3
@@ -357,15 +357,30 @@
       [3, 7,  8,  9, 11, 10, 13,  3,  4],
       [5, 6,  6,  6, 10, 13, 13,  5, 10],
     ];
+    this.background = [
+      [0, 12, 12, 12, 12, 13, 13, 13, 13],
+      [0, 12, 12, 12, 12, 13, 13, 13, 13],
+      [0, 12, 12, 12, 12, 13, 13, 13,  0],
+      [0, 12, 12, 12, 12, 13, 13, 13,  0],
+      [0, 12, 12, 12, 12, 13, 13, 13,  0],
+      [0, 12, 12, 12, 13, 13, 13, 13,  0],
+      [0,  0,  0,  0, 13, 13, 13, 13,  0],
+    ];
     this.land = options.land;
     this.square = {};
     this.square = options.square;
     this.objects = options.objects;
     this.imagesSurface = document.getElementsByClassName('imgs-container')[0];
+    this.imagesBackSurface = document.getElementsByClassName('imgs-back-container')[0];
   }
   RenderImgs.prototype = Object.create(RenderBase.prototype);
   RenderImgs.prototype.constructor = RenderImgs;
   RenderImgs.prototype.Init = function() {
+    this.background.forEach(function(line, y) {
+      this.background[y].forEach(function(num, x) {
+        this.DrawBack(num, x, y);
+      }, this);
+    }, this);
     this.ground_land.forEach(function(line, y) {
       this.ground_land[y].forEach(function(num, x) {
         this.Draw(num, x, y);
@@ -373,22 +388,16 @@
     }, this);
   }
   RenderImgs.prototype.Draw = function(num, x, y) {
-    // debugger;
-    // if (obj.hide) return;
-    // var drawX = typeof x === 'number' ? x : obj.x;
-    // var drawY = typeof y === 'number' ? y : obj.y;
     const img = document.createElement('img');
     img.src = 'mappack_PNG/mapTile_' + 
       this.TILES[num] + '.png';
     this.imagesSurface.appendChild(img);
-    // this.imagesSurface.
-    // this.drawContext.fillStyle = this.COLORS[obj.id];
-    // this.drawContext.fillRect(
-    //   drawX * this.FIELD_WIDTH,
-    //   drawY * this.FIELD_HEIGHT,
-    //   this.FIELD_WIDTH,
-    //   this.FIELD_HEIGHT
-    // );
+  }
+  RenderImgs.prototype.DrawBack = function(num, x, y) {
+    const img = document.createElement('img');
+    img.src = 'mappack_PNG/mapTile_' + 
+      this.TILES[num] + '.png';
+    this.imagesBackSurface.appendChild(img);
   }
   RenderImgs.prototype.Render = function() {
     // this.Draw(this.square);
@@ -405,15 +414,18 @@
       const radios = document.getElementsByName('render');
       const canvas_container = document.getElementsByClassName('canvas-container')[0];
       const imgs_container = document.getElementsByClassName('imgs-container')[0];
+      const imgs_back_container = document.getElementsByClassName('imgs-back-container')[0];
       const radioHandler = function() {
         if (this.value === 'canvas') {
           canvas_container.style.display = 'inline-block';
           imgs_container.style.display = 'none';
+          imgs_back_container.style.display = 'none';
           protoTank = new ProtoSquare(Render);
           protoTank.Launch();
         } else {
           canvas_container.style.display = 'none';
           imgs_container.style.display = 'inline-block';
+          imgs_back_container.style.display = 'inline-block';
           protoTank = new ProtoSquare(RenderImgs);
           protoTank.Launch();
         }
