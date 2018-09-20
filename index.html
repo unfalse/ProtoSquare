@@ -9,6 +9,12 @@
                 display: block;
                 position: relative;
             }
+                .surfaces-mount {
+                    width: 576px;
+                    height: 448px;
+                    display: none;
+                    padding: 20px;
+                }
                 .render-container {
                     height: 448px;
                     width: 576px;
@@ -25,6 +31,7 @@
                 .imgs-back-container {
                     padding: 20px;
                     display: none;
+                    clip-path: inset(30px 30px 30px 30px);
                 }
                 .imgs-container_overlay {
                     position: absolute;
@@ -61,6 +68,9 @@
             }
             #drawing-surface {
                 border: 1px solid black;
+            }
+            .transparent-img {
+                opacity: 0;
             }
         </style>
     </head>
@@ -99,12 +109,14 @@
 
         <div class="render-and-switch">
             <div class="render-container canvas-container">
-                <img src="frame-1.png" id="crocodile">
                 <canvas id="drawing-surface" height="448" width="576">Please, upgrade your browser.</canvas>
             </div>
 
-            <div class="render-container imgs-back-container imgs-container_overlay"></div>
-            <div class="render-container imgs-container imgs-container_overlay"></div>
+            <div class="surfaces-mount">
+                <div class="render-container imgs-back-container imgs-container_overlay"></div>
+                <div class="render-container imgs-container imgs-container_overlay"></div>
+                <img src="frame-1.png" id="crocodile">
+            </div>
 
             <div class="render-switch render-switch_va-top">
                 <div class="render-switch-inside render-switch-inside_va-top">
