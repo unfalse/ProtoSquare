@@ -238,12 +238,31 @@
     // ---
     this.controls.subscribe(this.ControlsHandler.bind(this));
     // this.mainCycleId = setInterval(this.Update.bind(this), 0);
+    this.switchRender = false;
     this.Update();
   }
   ProtoSquare.prototype.Update = function() {
+    if (this.switchRender) {
+      // TODO: check if memory utilisation will rise when old engine instance
+      // TODO: will be overwritten by the new engine instance
+      // TODO: (or will garbage collector clean unused objects)
+      this.RenderEngine = new this._renderDep({
+        land: this.land,
+        objects: this.objects,
+        square: this.square
+      });
+      this.RenderEngine.Init();
+      this.switchRender = false;
+      this.Update();
+      return;
+    }
     this.square.Update(this);
     this.RenderEngine.Render();
     setTimeout(this.Update.bind(this), 0);
+  }
+  ProtoSquare.prototype.SwitchRenderEngine = function(renderDep) {
+    this._renderDep = renderDep;
+    this.switchRender = true;
   }
   ProtoSquare.prototype.GetObjectId = function(x, y) {
       return this.land[y] && this.land[y][x];
@@ -332,8 +351,9 @@
   }
 
   var RenderImgs = function(options) {
+    this.TRANSPARENT = 'transparent';
     this.TILES = [
-      'white'
+      this.TRANSPARENT
       ,'006' // 1
       ,'008'
       ,'021' // 3
@@ -345,17 +365,18 @@
       ,'025' // 9
       ,'038'
       ,'009' //11
-      ,'188' // 12 <-- water
+      ,'187' // 12 <-- water
       ,'black' // 13
+      ,'white' // 14
     ];
     this.ground_land = [
-      [1, 2, 13, 13,  1,  2, 13, 13, 13],
-      [3, 4, 13, 13,  3,  4, 13,  1,  2],
-      [3, 4, 13, 13,  3,  4, 13,  3,  4],
-      [3, 4, 13, 13,  3,  4, 13,  3,  4],
-      [3, 4, 13,  1,  9,  4, 13,  3,  4],
-      [3, 7,  8,  9, 11, 10, 13,  3,  4],
-      [5, 6,  6,  6, 10, 13, 13,  5, 10],
+      [1, 2, 0, 0,  1,  2, 0, 0,  0],
+      [3, 4, 0, 0,  3,  4, 0, 1,  2],
+      [3, 4, 0, 0,  3,  4, 0, 3,  4],
+      [3, 4, 0, 0,  3,  4, 0, 3,  4],
+      [3, 4, 0, 1,  9,  4, 0, 3,  4],
+      [3, 7, 8, 9, 11, 10, 0, 3,  4],
+      [5, 6, 6, 6, 10,  0, 0, 5, 10],
     ];
     this.background = [
       [0, 12, 12, 12, 12, 13, 13, 13, 13],
@@ -376,6 +397,11 @@
   RenderImgs.prototype = Object.create(RenderBase.prototype);
   RenderImgs.prototype.constructor = RenderImgs;
   RenderImgs.prototype.Init = function() {
+    function cleanSurfaces(surfaceNode) {
+      while (surfaceNode.firstChild) surfaceNode.removeChild(surfaceNode.firstChild);
+    }
+    cleanSurfaces(this.imagesSurface);
+    cleanSurfaces(this.imagesBackSurface);
     this.background.forEach(function(line, y) {
       this.background[y].forEach(function(num, x) {
         this.DrawBack(num, x, y);
@@ -389,22 +415,21 @@
   }
   RenderImgs.prototype.Draw = function(num, x, y) {
     const img = document.createElement('img');
-    img.src = 'mappack_PNG/mapTile_' + 
-      this.TILES[num] + '.png';
+    const tile = this.TILES[num];
+    const fileName = tile !== this.TRANSPARENT ? tile : 'black';
+    img.src = 'mappack_PNG/mapTile_' + fileName + '.png';
+    if (tile === this.TRANSPARENT) img.className = 'transparent-img';
     this.imagesSurface.appendChild(img);
   }
   RenderImgs.prototype.DrawBack = function(num, x, y) {
     const img = document.createElement('img');
-    img.src = 'mappack_PNG/mapTile_' + 
-      this.TILES[num] + '.png';
+    const tile = this.TILES[num];
+    const fileName = tile !== this.TRANSPARENT ? tile : 'black';
+    img.src = 'mappack_PNG/mapTile_' + fileName + '.png';
+    if (tile === this.TRANSPARENT) img.className = 'transparent-img';
     this.imagesBackSurface.appendChild(img);
   }
-  RenderImgs.prototype.Render = function() {
-    // this.Draw(this.square);
-  }
-
-  var protoTank = new ProtoSquare(Render, RenderImgs);
-  protoTank.Launch();
+  RenderImgs.prototype.Render = function() {}
 
   const setRadioGroupHandlers = function() {
     render_switch();
@@ -415,19 +440,22 @@
       const canvas_container = document.getElementsByClassName('canvas-container')[0];
       const imgs_container = document.getElementsByClassName('imgs-container')[0];
       const imgs_back_container = document.getElementsByClassName('imgs-back-container')[0];
+      const imgs_surfaces_mount = document.getElementsByClassName('surfaces-mount')[0];
       const radioHandler = function() {
         if (this.value === 'canvas') {
           canvas_container.style.display = 'inline-block';
           imgs_container.style.display = 'none';
           imgs_back_container.style.display = 'none';
-          protoTank = new ProtoSquare(Render);
-          protoTank.Launch();
+          imgs_surfaces_mount.style.display = 'none';
+          protoTank.SwitchRenderEngine(Render);
+          // protoTank.Launch();
         } else {
           canvas_container.style.display = 'none';
           imgs_container.style.display = 'inline-block';
           imgs_back_container.style.display = 'inline-block';
-          protoTank = new ProtoSquare(RenderImgs);
-          protoTank.Launch();
+          imgs_surfaces_mount.style.display = 'inline-block';
+          protoTank.SwitchRenderEngine(RenderImgs);
+          // protoTank.Launch();
         }
       };
       for(let i = 0; i < radios.length; i++) {
@@ -438,7 +466,6 @@
     function layout_switch() {
       const radios = document.getElementsByName('layout_switcher');
       const render_switch_inside = document.getElementsByClassName('render-switch-inside')[0];
-      const render_switch = document.getElementsByClassName('render-switch')[0];
       const radioHandler = function() {
         if (this.value === 'va-top') {
           render_switch_inside.className =
@@ -457,16 +484,19 @@
     }
   };
 
+  var protoTank = new ProtoSquare(Render);
+  protoTank.Launch();
+
   setRadioGroupHandlers();
 
-  // var crocodile = document.getElementById("crocodile");
-  // crocodile.style.top = 0;
-  // crocodile.style.left = 0;
-  // crocodile.style.display = '';
-  // this.draw = function() {
-  //   this.crocodile.style.top = this.y * FIELD_HEIGHT;
-  //   this.crocodile.style.left = this.x * FIELD_WIDTH;
-  // }
+  var crocodile = document.getElementById("crocodile");
+  crocodile.style.top = 0;
+  crocodile.style.left = 20;
+  crocodile.style.display = 'block';
+  this.draw = function() {
+    this.crocodile.style.top = this.y * FIELD_HEIGHT;
+    this.crocodile.style.left = this.x * FIELD_WIDTH;
+  }
 
   // TODO:
   /*
