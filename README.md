@@ -1,1 +1,1 @@
-# ProtoTank
+# ProtoSquare
