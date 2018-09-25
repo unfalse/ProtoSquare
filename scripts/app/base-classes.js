@@ -1,4 +1,6 @@
-define(function() {
+define(function(require) {
+    const constants = require('./constants');
+    const { NOTHING } = constants;
     var MapObject = function(id, x, y) {
         this.id = id;
         this.x = x;
