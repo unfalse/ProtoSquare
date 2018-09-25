@@ -1,28 +1,28 @@
 (function() {
 
-  const NOTHING = { ID: 0 }; // nothing
-  const GROUND = { ID: 1 }; // ground
-  const WALL = { ID: 2 }; // wall
-  const WATER = { ID: 3 }; // water
-  const ABYSS = { ID: 4 }; // abyss
-  const TARGET = { ID: 5 }; // target
-  const SQUARE = { ID:6 }; // square
-  const BOAT = { ID: 7 }; // boat
-  const HELI = { ID: 8 }; // helicopter
+//   const NOTHING = { ID: 0 }; // nothing
+//   const GROUND = { ID: 1 }; // ground
+//   const WALL = { ID: 2 }; // wall
+//   const WATER = { ID: 3 }; // water
+//   const ABYSS = { ID: 4 }; // abyss
+//   const TARGET = { ID: 5 }; // target
+//   const SQUARE = { ID:6 }; // square
+//   const BOAT = { ID: 7 }; // boat
+//   const HELI = { ID: 8 }; // helicopter
 
-  var MapObject = function(id, x, y) {
-    this.id = id;
-    this.x = x;
-    this.y = y;
-    this.hide = false;
-  };
-  MapObject.prototype.enabled = true;
+//   var MapObject = function(id, x, y) {
+//     this.id = id;
+//     this.x = x;
+//     this.y = y;
+//     this.hide = false;
+//   };
+//   MapObject.prototype.enabled = true;
 
-  var NothingObject = function(x, y) {
-    MapObject.apply(this, [NOTHING.ID, x, y]);
-  }
-  NothingObject.prototype = Object.create(MapObject.prototype);
-  NothingObject.prototype.constructor = NothingObject;
+//   var NothingObject = function(x, y) {
+//     MapObject.apply(this, [NOTHING.ID, x, y]);
+//   }
+//   NothingObject.prototype = Object.create(MapObject.prototype);
+//   NothingObject.prototype.constructor = NothingObject;
 
   var GroundObject = function(x, y) {
     MapObject.apply(this, [GROUND.ID, x, y]);
@@ -417,7 +417,7 @@
     const img = document.createElement('img');
     const tile = this.TILES[num];
     const fileName = tile !== this.TRANSPARENT ? tile : 'black';
-    img.src = 'mappack_PNG/mapTile_' + fileName + '.png';
+    img.src = 'assets/mappack_PNG/mapTile_' + fileName + '.png';
     if (tile === this.TRANSPARENT) img.className = 'transparent-img';
     this.imagesSurface.appendChild(img);
   }
@@ -425,7 +425,7 @@
     const img = document.createElement('img');
     const tile = this.TILES[num];
     const fileName = tile !== this.TRANSPARENT ? tile : 'black';
-    img.src = 'mappack_PNG/mapTile_' + fileName + '.png';
+    img.src = 'assets/mappack_PNG/mapTile_' + fileName + '.png';
     if (tile === this.TRANSPARENT) img.className = 'transparent-img';
     this.imagesBackSurface.appendChild(img);
   }
