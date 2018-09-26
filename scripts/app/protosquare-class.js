@@ -46,6 +46,12 @@ define(function(require) {
             [1, 1, 2, 1, 1, 1, 4, 1, 1],
             [1, 1, 2, 1, 1, 4, 4, 1, 5],
         ];
+        this.keyMap = {
+            'up':     function() { this.dy = -1; this.dx = 0; },
+            'right':  function() { this.dy = 0; this.dx = 1; },
+            'down':   function() { this.dy = 1; this.dx = 0; },
+            'left':   function() { this.dy = 0; this.dx = -1; },
+        };
         this.controls = new Controls();
         this.square = new SquareObject(0, 0);
         this.RenderEngine = new this._renderDep({
@@ -83,7 +89,7 @@ define(function(require) {
             return;
         }
         this.square.Update(this);
-        this.RenderEngine.Render();
+        this.RenderEngine.Render(this);
         setTimeout(this.Update.bind(this), 0);
     }
     ProtoSquare.prototype.SwitchRenderEngine = function(renderDep) {
@@ -98,14 +104,9 @@ define(function(require) {
         return objectId && this.objects[objectId];
     }
     ProtoSquare.prototype.ControlsHandler = function(eventObj) {
-        const keyMap = {
-            'up':     function() { this.dy = -1; this.dx = 0; },
-            'right':  function() { this.dy = 0; this.dx = 1; },
-            'down':   function() { this.dy = 1; this.dx = 0; },
-            'left':   function() { this.dy = 0; this.dx = -1; },
-        };
         if (eventObj.detail.move) {
-            keyMap[eventObj.detail.keyNum].apply(this.square);
+            // TODO: this is a strange code... keyMap knows about dx and dy but they are in Square class!!
+            this.keyMap[eventObj.detail.keyNum].apply(this.square);
             this.square.move = true;
         } else if (eventObj.detail.water) {
             Boat.prototype.Enhance(this.square);

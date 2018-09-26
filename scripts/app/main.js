@@ -65,21 +65,4 @@ define(function(require) {
     protoTank.Launch();
 
     setRadioGroupHandlers();
-
-    var crocodile = document.getElementById("crocodile");
-    crocodile.style.top = 0;
-    crocodile.style.left = 20;
-    crocodile.style.display = 'block';
-  
-    this.draw = function() {
-        this.crocodile.style.top = this.y * FIELD_HEIGHT;
-        this.crocodile.style.left = this.x * FIELD_WIDTH;
-    }
-
-  // TODO:
-  /*
-    next steps:
-    4. Add code for collides
-    5. Add code for working with water and air protos
-  */
 })
