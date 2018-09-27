@@ -17,7 +17,6 @@ define(function(require) {
         console.log('Constructor launched!');
         this.land = [];
         this.objects = [];
-        // this.boatEnhancer = new Boat(0, 4);
         this.move = false;
         this.smoothControls = false;
         this.mainCycleId = -1;
@@ -106,18 +105,30 @@ define(function(require) {
         return objectId && this.objects[objectId];
     }
     ProtoSquare.prototype.ControlsHandler = function(eventObj) {
-        if (eventObj.detail.move) {
-            this.keyMap[eventObj.detail.keyNum].apply(this.square);
-            this.square.move = true;
-        } else if (eventObj.detail.water) {
-            // TODO: maybe move it to the Square class
-            Boat.prototype.Enhance(this.square);
-        } else if (eventObj.detail.air) {
-            // TODO: maybe move it to the Square class
-            Heli.prototype.Enhance(this.square);
-        } else {
+        const { keyStr, keydown, keyup } = eventObj.detail;
+        if (keydown) {
+            if ([ KEYLEFT, KEYRIGHT, KEYUP, KEYDOWN ].indexOf(keyStr) >= 0) {
+                this.square.move = true;
+            }
+            if (keyStr === KEY_S) {
+                const aquaSpan = document.getElementById('aqua');
+                aquaSpan.innerText = 'enabled';
+                // TODO: maybe move it to the Square class
+                Boat.prototype.Enhance(this.square);
+            }
+            if (keyStr === KEY_A) {
+                const airSpan = document.getElementById('air');
+                airSpan.innerText = 'enabled';
+                // TODO: maybe move it to the Square class
+                Heli.prototype.Enhance(this.square);
+            }
+        }
+        if (keyup) {
             this.square.move = false;
             this.square.moved = false;
+        }
+        if (this.square.move) {
+            this.keyMap[keyStr].apply(this.square);
         }
     };
 

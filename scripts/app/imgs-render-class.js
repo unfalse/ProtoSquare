@@ -56,26 +56,28 @@ define(function(require) {
     }
     RenderImgs.prototype.constructor = RenderImgs;
     RenderImgs.prototype.Init = function() {
-        function cleanSurfaces(surfaceNode) {
-            while (surfaceNode.firstChild) surfaceNode.removeChild(surfaceNode.firstChild);
-        }
         cleanSurfaces(this.imagesSurface);
         cleanSurfaces(this.imagesBackSurface);
-        this.background.forEach(function(line, y) {
-            this.background[y].forEach(function(num, x) {
-                this.Draw(num, x, y, this.imagesBackSurface);
+        drawOnSurface.call(this, this.background, this.imagesBackSurface);
+        drawOnSurface.call(this, this.ground_land, this.imagesSurface);
+
+        function cleanSurfaces(surfaceNode) {
+            while (surfaceNode.firstChild)
+                surfaceNode.removeChild(surfaceNode.firstChild);
+        }
+        function drawOnSurface(tiles, surface) {
+            tiles.forEach(function(line, y) {
+                tiles[y].forEach(function(num, x) {
+                    this.Draw(num, x, y, surface);
+                }, this);
             }, this);
-        }, this);
-        this.ground_land.forEach(function(line, y) {
-            this.ground_land[y].forEach(function(num, x) {
-                this.Draw(num, x, y, this.imagesSurface);
-            }, this);
-        }, this);
+        }
     }
     RenderImgs.prototype.Draw = function(num, x, y, imagesSurface) {
         const img = document.createElement('img');
         const tile = this.TILES[num];
         const fileName = tile !== this.TRANSPARENT ? tile : 'black';
+        // TODO: constants ?
         img.src = 'assets/mappack_PNG/mapTile_' + fileName + '.png';
         if (tile === this.TRANSPARENT) img.className = 'transparent-img';
         imagesSurface.appendChild(img);
