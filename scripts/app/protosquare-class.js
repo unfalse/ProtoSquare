@@ -5,7 +5,7 @@ define(function(require) {
     const squareClass = require('./square-class');
     const controlsClass = require('./controls-class');
     const abilityClasses = require('./ability-classes');
-    const { SQUARE } = constants;
+    const { SQUARE, KEYUP, KEYDOWN, KEYLEFT, KEYRIGHT, KEY_S, KEY_A, CONTROLS_EVENT } = constants;
     const { MapObject, NothingObject } = baseClasses;
     const { AbyssObject, WaterObject, GroundObject, WallObject, TargetObject } = landClasses;
     const { SquareObject } = squareClass;
@@ -46,30 +46,31 @@ define(function(require) {
             [1, 1, 2, 1, 1, 1, 4, 1, 1],
             [1, 1, 2, 1, 1, 4, 4, 1, 5],
         ];
-        this.keyMap = {
-            'up':     function() { this.dy = -1; this.dx = 0; },
-            'right':  function() { this.dy = 0; this.dx = 1; },
-            'down':   function() { this.dy = 1; this.dx = 0; },
-            'left':   function() { this.dy = 0; this.dx = -1; },
-        };
-        this.controls = new Controls();
+        this.controls = new Controls({
+             keyLeft: KEYLEFT,
+             keyUp: KEYUP,
+             keyRight: KEYRIGHT,
+             keyDown: KEYDOWN,
+             key_s: KEY_S,
+             key_a: KEY_A,
+             eventName: CONTROLS_EVENT
+        });
         this.square = new SquareObject(0, 0);
+        this.keyMap = {};
+        this.keyMap[KEYUP] = this.square.GoUp;
+        this.keyMap[KEYRIGHT] = this.square.GoRight;
+        this.keyMap[KEYDOWN] = this.square.GoDown;
+        this.keyMap[KEYLEFT] = this.square.GoLeft;
+
         this.RenderEngine = new this._renderDep({
             land: this.land,
             objects: this.objects,
             square: this.square
         });
         this.RenderEngine.Init();
-        // Temporary for filling with tiles
-        // const RenderImgs = new this._renderDep2({
-        //   land: this.land,
-        //   objects: this.objects,
-        //   square: this.square
-        // });
-        // RenderImgs.Init();
-        // ---
+
         this.controls.subscribe(this.ControlsHandler.bind(this));
-        // this.mainCycleId = setInterval(this.Update.bind(this), 0);
+
         this.switchRender = false;
         this.Update();
     }
@@ -78,6 +79,7 @@ define(function(require) {
             // TODO: check if memory utilisation will rise when old engine instance
             // TODO: will be overwritten by the new engine instance
             // TODO: (or will garbage collector clean unused objects)
+            // ANSWER: no memory utilisation rising
             this.RenderEngine = new this._renderDep({
                 land: this.land,
                 objects: this.objects,
@@ -105,12 +107,13 @@ define(function(require) {
     }
     ProtoSquare.prototype.ControlsHandler = function(eventObj) {
         if (eventObj.detail.move) {
-            // TODO: this is a strange code... keyMap knows about dx and dy but they are in Square class!!
             this.keyMap[eventObj.detail.keyNum].apply(this.square);
             this.square.move = true;
         } else if (eventObj.detail.water) {
+            // TODO: maybe move it to the Square class
             Boat.prototype.Enhance(this.square);
         } else if (eventObj.detail.air) {
+            // TODO: maybe move it to the Square class
             Heli.prototype.Enhance(this.square);
         } else {
             this.square.move = false;

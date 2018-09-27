@@ -9,7 +9,7 @@ define(function(require) {
     const { GroundObject } = landClasses;
 
     var SquareObject = function(x, y) {
-        this.dx = 0;
+        this.dx = 0; // direction variables
         this.dy = 0;
         this.move = false;
         this.moved = false;
@@ -44,6 +44,18 @@ define(function(require) {
         }
         return collisionResult;
     };
+    SquareObject.prototype.GoUp = function() {
+        this.dy = -1; this.dx = 0;
+    }
+    SquareObject.prototype.GoDown = function() {
+        this.dy = 1; this.dx = 0; 
+    }
+    SquareObject.prototype.GoLeft = function() {
+        this.dy = 0; this.dx = -1;
+    }
+    SquareObject.prototype.GoRight = function() {
+        this.dy = 0; this.dx = 1;
+    }
 
     return {
         SquareObject

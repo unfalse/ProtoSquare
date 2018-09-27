@@ -13,5 +13,12 @@ define(function() {
         ,FIELD_HEIGHT: 64
         ,MAP_WIDTH: 9
         ,MAP_HEIGHT: 7
+        ,KEYUP: 'up'
+        ,KEYDOWN: 'down'
+        ,KEYLEFT: 'left'
+        ,KEYRIGHT: 'right'
+        ,KEY_S: 's'
+        ,KEY_A: 'a'
+        ,CONTROLS_EVENT: 'controlsEvent'
     }
 });
